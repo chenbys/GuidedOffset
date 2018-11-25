@@ -1,9 +1,11 @@
-# before running, we must modify 'output_path' and 'prefix' at the same time!
 ---
+prefix: &prefix "first"
+smooth_penalty_weight: 1.1e-4
+output_path: "output/"
+
+gpus: '0,1,2,4'
 MXNET_VERSION: "mxnet"
-output_path: "./output/0.4e-4"
 symbol: resnet_v1_101_rfcn_dcn
-gpus: '0,1,2,3'
 CLASS_AGNOSTIC: true
 SCALES:
 - 600
@@ -67,7 +69,7 @@ TRAIN:
   begin_epoch: 0
   end_epoch: 7
   # prefix as penalty weight
-  model_prefix: '0.4e-4'
+  model_prefix: *prefix
   # whether resume training
   RESUME: false
   # whether flip image
