@@ -4,7 +4,7 @@ smoothness_penalty_weight: 1.1e-4
 ABCVar_penalty_weight: 1
 output_path: "output/"
 
-gpus: '0,1,2,4'
+gpus: '0,1,2'
 MXNET_VERSION: "mxnet"
 symbol: resnet_v1_101_rfcn_dcn
 CLASS_AGNOSTIC: true

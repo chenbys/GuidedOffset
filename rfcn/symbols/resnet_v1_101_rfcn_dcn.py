@@ -949,27 +949,29 @@ class resnet_v1_101_rfcn_dcn(Symbol):
 
             ##############################################################################
             #  @MyCode
-            smooth_penalty_kernel = mx.sym.Variable(name='smooth_penalty_kernel')
+            smoothness_penalty_kernel = mx.sym.Variable(name='smoothness_penalty_kernel')
+            smoothness_penalty_weight = mx.sym.Variable(name='smoothness_penalty_weight')
+            ABCVar_penalty_weight = mx.sym.Variable(name='ABCVar_penalty_weight')
 
-            def get_smooth_penalty(offset):
+            def get_smoothness_penalty(offset):
                 # [1,4*4,38,50]
-                delta = mx.sym.Convolution(offset, smooth_penalty_kernel,
+                delta = mx.sym.Convolution(offset, smoothness_penalty_kernel,
                                            kernel=[1, 1], no_bias=True, num_filter=4, num_group=4)
                 return delta.square().mean()
 
-            pa = get_smooth_penalty(res5a_branch2b_offset)
-            pb = get_smooth_penalty(res5b_branch2b_offset)
-            pc = get_smooth_penalty(res5c_branch2b_offset)
-
-            smooth_penalty = (pa + pb + pc) / 3
-            smooth_penalty_weight = mx.sym.Variable(name='smooth_penalty_weight')
-            smooth_penalty_loss = smooth_penalty_weight * smooth_penalty
-            smooth_penalty_loss = mx.sym.Reshape(smooth_penalty_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1))
-            smooth_penalty_loss = mx.sym.MakeLoss(smooth_penalty_loss, name='smooth_loss')
+            pa = get_smoothness_penalty(res5a_branch2b_offset)
+            pb = get_smoothness_penalty(res5b_branch2b_offset)
+            pc = get_smoothness_penalty(res5c_branch2b_offset)
+            smoothness_penalty = mean = (pa + pb + pc) / 3
+            ABCVar_penalty = ((pa - mean) ** 2 + (pa - mean) ** 2 + (pa - mean) ** 2) / 3
+            penalty_loss = smoothness_penalty_weight * smoothness_penalty + ABCVar_penalty_weight * ABCVar_penalty
+            penalty_loss = mx.sym.Reshape(penalty_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1))
+            penalty_loss = mx.sym.MakeLoss(penalty_loss, name='penalty_loss')
 
             group = mx.sym.Group(
-                [rpn_cls_prob, rpn_bbox_loss, cls_prob, bbox_loss, mx.sym.BlockGrad(rcnn_label), smooth_penalty_loss,
-                 mx.sym.BlockGrad(smooth_penalty), mx.sym.BlockGrad(pa), mx.sym.BlockGrad(pb), mx.sym.BlockGrad(pc)])
+                [rpn_cls_prob, rpn_bbox_loss, cls_prob, bbox_loss, mx.sym.BlockGrad(rcnn_label), penalty_loss,
+                 mx.sym.BlockGrad(pa), mx.sym.BlockGrad(pb), mx.sym.BlockGrad(pc),
+                 mx.sym.BlockGrad(smoothness_penalty), mx.sym.BlockGrad(ABCVar_penalty)])
         else:
             cls_prob = mx.sym.SoftmaxActivation(name='cls_prob', data=cls_score)
             cls_prob = mx.sym.Reshape(data=cls_prob, shape=(cfg.TEST.BATCH_IMAGES, -1, num_classes),

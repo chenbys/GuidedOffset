@@ -50,6 +50,8 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     logger, final_output_path = create_logger(config.output_path, args.cfg, config.dataset.image_set)
     # @MyCode
     smoothness_penalty_weight = float(config.mycfg.smoothness_penalty_weight)
+    ABCVar_penalty_weight = float(config.mycfg.ABCVar_penalty_weight)
+
     prefix = os.path.join(final_output_path, prefix)
 
     # load symbol
@@ -103,20 +105,22 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
 
     # @MyCode
     fixed_param_prefix.append('smoothness_penalty_weight')
-    fixed_param_prefix.append('smooth_penalty_kernel')
+    fixed_param_prefix.append('smoothness_penalty_kernel')
+    fixed_param_prefix.append('ABCVar_penalty_weight')
     arg_params['smoothness_penalty_weight'] = mx.ndarray.array([smoothness_penalty_weight])
-    logger.info('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
-    pprint.pprint('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
-    logger.info('@@@@prefix:' + prefix)
-    pprint.pprint('@@@@prefix:' + prefix)
-
+    arg_params['ABCVar_penalty_weight'] = mx.ndarray.array([ABCVar_penalty_weight])
     kernel = mx.ndarray.array([[1, 1, 0, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 1, 1],
                                [0, 0, 1, 1, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 1, 1, 0, 0],
                                [0, 0, 0, 0, 0, 0, 1, 1, -2, -2, 1, 1, 0, 0, 0, 0, 0, 0],
                                [0, 0, 0, 0, 1, 1, 0, 0, -2, -2, 0, 0, 1, 1, 0, 0, 0, 0]])
-    # [4,72,1,1]
-    # arg_params['smooth_penalty_kernel'] = mx.nd.Concat(kernel, kernel, kernel, kernel).expand_dims(2).expand_dims(3)
-    arg_params['smooth_penalty_kernel'] = kernel.expand_dims(2).expand_dims(3)
+    arg_params['smoothness_penalty_kernel'] = kernel.expand_dims(2).expand_dims(3)
+
+    logger.info('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
+    pprint.pprint('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
+    logger.info('@@@@ABCVar_penalty_weight:' + str(ABCVar_penalty_weight))
+    pprint.pprint('@@@@ABCVar_penalty_weight:' + str(ABCVar_penalty_weight))
+    logger.info('@@@@prefix:' + prefix)
+    pprint.pprint('@@@@prefix:' + prefix)
 
     # check parameter shapes
     sym_instance.check_parameter_shapes(arg_params, aux_params, data_shape_dict)
@@ -143,13 +147,14 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     bbox_metric = metric.RCNNL1LossMetric(config)
     eval_metrics = mx.metric.CompositeEvalMetric()
     # @MyCode
-    print('a')
+    # eval_metrics.add(metric.ABCVarPenalty())
     eval_metrics.add(metric.APenalty())
     eval_metrics.add(metric.BPenalty())
     eval_metrics.add(metric.CPenalty())
 
     # rpn_eval_metric, rpn_cls_metric, rpn_bbox_metric, eval_metric, cls_metric, bbox_metric
-    for child_metric in [eval_metric, rpn_eval_metric, rpn_cls_metric, rpn_bbox_metric, cls_metric, bbox_metric]:
+    # for child_metric in [eval_metric, rpn_eval_metric, rpn_cls_metric, rpn_bbox_metric, cls_metric, bbox_metric]:
+    for child_metric in [eval_metric, rpn_eval_metric]:
         eval_metrics.add(child_metric)
     # callback
     batch_end_callback = callback.Speedometer(train_data.batch_size, frequent=args.frequent)

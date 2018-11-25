@@ -15,12 +15,22 @@ import mxnet as mx
 import numpy as np
 
 
+class ABCVarPenalty(mx.metric.EvalMetric):
+    def __init__(self):
+        super(ABCVarPenalty, self).__init__('ABCVarPenalty')
+
+    def update(self, labels, preds):
+        var_penalty = preds[10].asnumpy()[0]
+        self.sum_metric += var_penalty
+        self.num_inst += 1
+
+
 class APenalty(mx.metric.EvalMetric):
     def __init__(self):
         super(APenalty, self).__init__('APenalty')
 
     def update(self, labels, preds):
-        smooth_penalty = preds[7].asnumpy()[0] * 1000
+        smooth_penalty = preds[6].asnumpy()[0] * 1000
         self.sum_metric += smooth_penalty
         self.num_inst += 1
 
@@ -30,7 +40,7 @@ class BPenalty(mx.metric.EvalMetric):
         super(BPenalty, self).__init__('BPenalty')
 
     def update(self, labels, preds):
-        smooth_penalty = preds[8].asnumpy()[0] * 1000
+        smooth_penalty = preds[7].asnumpy()[0] * 1000
         self.sum_metric += smooth_penalty
         self.num_inst += 1
 
@@ -40,7 +50,7 @@ class CPenalty(mx.metric.EvalMetric):
         super(CPenalty, self).__init__('CPenalty')
 
     def update(self, labels, preds):
-        smooth_penalty = preds[9].asnumpy()[0] * 1000
+        smooth_penalty = preds[8].asnumpy()[0] * 1000
         self.sum_metric += smooth_penalty
         self.num_inst += 1
 
