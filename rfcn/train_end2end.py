@@ -147,7 +147,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     bbox_metric = metric.RCNNL1LossMetric(config)
     eval_metrics = mx.metric.CompositeEvalMetric()
     # @MyCode
-    # eval_metrics.add(metric.ABCVarPenalty())
+    eval_metrics.add(metric.ABCVarPenalty())
     eval_metrics.add(metric.APenalty())
     eval_metrics.add(metric.BPenalty())
     eval_metrics.add(metric.CPenalty())
