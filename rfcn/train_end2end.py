@@ -49,7 +49,7 @@ from utils.lr_scheduler import WarmupMultiFactorScheduler
 def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, lr_step):
     logger, final_output_path = create_logger(config.output_path, args.cfg, config.dataset.image_set)
     # @MyCode
-    smooth_penalty_weight = float(config.mycfg.smooth_penalty_weight)
+    smoothness_penalty_weight = float(config.mycfg.smoothness_penalty_weight)
     prefix = os.path.join(final_output_path, prefix)
 
     # load symbol
@@ -102,11 +102,11 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     fixed_param_prefix = config.network.FIXED_PARAMS
 
     # @MyCode
-    fixed_param_prefix.append('smooth_penalty_weight')
+    fixed_param_prefix.append('smoothness_penalty_weight')
     fixed_param_prefix.append('smooth_penalty_kernel')
-    arg_params['smooth_penalty_weight'] = mx.ndarray.array([smooth_penalty_weight])
-    logger.info('@@@@smooth_penalty_weight:' + str(smooth_penalty_weight))
-    pprint.pprint('@@@@smooth_penalty_weight:' + str(smooth_penalty_weight))
+    arg_params['smoothness_penalty_weight'] = mx.ndarray.array([smoothness_penalty_weight])
+    logger.info('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
+    pprint.pprint('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
     logger.info('@@@@prefix:' + prefix)
     pprint.pprint('@@@@prefix:' + prefix)
 
