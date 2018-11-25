@@ -1,6 +1,7 @@
 ---
 prefix: &prefix "first"
 smoothness_penalty_weight: 1.1e-4
+ABCVar_penalty_weight: 1
 output_path: "output/"
 
 gpus: '0,1,2,3'
