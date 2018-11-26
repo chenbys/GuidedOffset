@@ -168,8 +168,7 @@ def compare_logs(log_paths, kind_of_y='RCNNAcc', save_path=None, colors=None):
         plt.savefig(save_path)
     return
 
-compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='RCNNAcc', colors=['r', 'b'])
-
+# compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='RCNNAcc', colors=['r', 'b'])
 # compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='Train-APenalty', colors=['r', 'b'])
 # compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='BPenalty', colors=['r', 'b'])
 # compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='CPenalty', colors=['r', 'b'])

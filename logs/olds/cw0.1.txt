@@ -1,0 +1,17 @@
+'@@@@smooth_penalty_weight:0.1'
+a
+('lr', 0.0005, 'lr_epoch_diff', [4.83], 'lr_iters', [79941])
+Epoch[0] Batch [100]	Speed: 3.71 samples/sec	Train-APenalty=0.000002,	BPenalty=0.000001,	CPenalty=0.000000,	RCNNAcc=0.527963,	RPNAcc=0.892133,	RPNLogLoss=0.330494,	RPNL1Loss=0.110803,	RCNNLogLoss=3.017324,	RCNNL1Loss=0.311972,	
+Epoch[0] Batch [200]	Speed: 3.64 samples/sec	Train-APenalty=0.000069,	BPenalty=0.000018,	CPenalty=0.000001,	RCNNAcc=0.694982,	RPNAcc=0.907299,	RPNLogLoss=0.290666,	RPNL1Loss=0.107811,	RCNNLogLoss=2.963811,	RCNNL1Loss=0.320972,	
+Epoch[0] Batch [300]	Speed: 3.58 samples/sec	Train-APenalty=0.014488,	BPenalty=0.012810,	CPenalty=0.030625,	RCNNAcc=0.753452,	RPNAcc=0.914393,	RPNLogLoss=0.271194,	RPNL1Loss=0.111390,	RCNNLogLoss=2.478035,	RCNNL1Loss=0.318751,	
+Epoch[0] Batch [400]	Speed: 3.61 samples/sec	Train-APenalty=0.025176,	BPenalty=0.039755,	CPenalty=0.104847,	RCNNAcc=0.786705,	RPNAcc=0.913980,	RPNLogLoss=0.265915,	RPNL1Loss=0.112347,	RCNNLogLoss=2.032587,	RCNNL1Loss=0.302292,	
+Epoch[0] Batch [500]	Speed: 3.32 samples/sec	Train-APenalty=0.026272,	BPenalty=0.047789,	CPenalty=0.128317,	RCNNAcc=0.802364,	RPNAcc=0.914339,	RPNLogLoss=0.257873,	RPNL1Loss=0.113204,	RCNNLogLoss=1.776388,	RCNNL1Loss=0.299800,	
+Epoch[0] Batch [600]	Speed: 3.15 samples/sec	Train-APenalty=0.026334,	BPenalty=0.052668,	CPenalty=0.117878,	RCNNAcc=0.813806,	RPNAcc=0.915908,	RPNLogLoss=0.250221,	RPNL1Loss=0.109574,	RCNNLogLoss=1.597439,	RCNNL1Loss=0.294835,	
+Epoch[0] Batch [700]	Speed: 3.15 samples/sec	Train-APenalty=0.026317,	BPenalty=0.056141,	CPenalty=0.107269,	RCNNAcc=0.821828,	RPNAcc=0.918220,	RPNLogLoss=0.243048,	RPNL1Loss=0.108371,	RCNNLogLoss=1.468758,	RCNNL1Loss=0.290954,	
+Epoch[0] Batch [800]	Speed: 3.69 samples/sec	Train-APenalty=0.027409,	BPenalty=0.059052,	CPenalty=0.098678,	RCNNAcc=0.829422,	RPNAcc=0.919356,	RPNLogLoss=0.235388,	RPNL1Loss=0.105326,	RCNNLogLoss=1.362543,	RCNNL1Loss=0.282250,	
+Epoch[0] Batch [900]	Speed: 4.73 samples/sec	Train-APenalty=0.030265,	BPenalty=0.074981,	CPenalty=0.094909,	RCNNAcc=0.832989,	RPNAcc=0.919926,	RPNLogLoss=0.231940,	RPNL1Loss=0.105868,	RCNNLogLoss=1.287827,	RCNNL1Loss=0.279854,	
+Epoch[0] Batch [1000]	Speed: 4.68 samples/sec	Train-APenalty=0.038504,	BPenalty=0.086491,	CPenalty=0.093463,	RCNNAcc=0.835516,	RPNAcc=0.920999,	RPNLogLoss=0.227189,	RPNL1Loss=0.103863,	RCNNLogLoss=1.226238,	RCNNL1Loss=0.278482,	
+Epoch[0] Batch [1100]	Speed: 4.76 samples/sec	Train-APenalty=0.114020,	BPenalty=3.147516,	CPenalty=0.200817,	RCNNAcc=0.837860,	RPNAcc=0.922233,	RPNLogLoss=0.223806,	RPNL1Loss=0.104417,	RCNNLogLoss=1.182356,	RCNNL1Loss=0.280469,	
+Epoch[0] Batch [1200]	Speed: 4.79 samples/sec	Train-APenalty=0.119613,	BPenalty=3.109742,	CPenalty=0.202802,	RCNNAcc=0.838061,	RPNAcc=0.923659,	RPNLogLoss=0.219964,	RPNL1Loss=0.104354,	RCNNLogLoss=1.146291,	RCNNL1Loss=0.284283,	
+Epoch[0] Batch [1300]	Speed: 4.74 samples/sec	Train-APenalty=0.118670,	BPenalty=2.925130,	CPenalty=0.193364,	RCNNAcc=0.838478,	RPNAcc=0.924757,	RPNLogLoss=0.215689,	RPNL1Loss=0.103062,	RCNNLogLoss=1.112858,	RCNNL1Loss=0.285152,	
+Epoch[0] Batch [1400]	Speed: 4.80 samples/sec	Train-APenalty=0.119288,	BPenalty=2.764807,	CPenalty=0.185072,	RCNNAcc=0.837373,	RPNAcc=0.926113,	RPNLogLoss=0.211310,	RPNL1Loss=0.101686,	RCNNLogLoss=1.088563,	RCNNL1Loss=0.286950,	
