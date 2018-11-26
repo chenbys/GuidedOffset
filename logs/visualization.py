@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def vis_offset(offset):
+def plot_offset(offset):
     """
     :param offset: Numpy.array. (2*k^2, )
     :return:
@@ -47,80 +47,6 @@ def vis_offset(offset):
     plt.tight_layout()
 
 
-def vis_log2(log_file_path1, log_file_path2=None, kind_of_y='RCNNAcc'):
-    """
-    Plot a curve for a log_file.
-    x-axis is 'Batch' count, y-axis is 'RCNNAcc' or 'RCNNLogLoss' or 'RCNNL1Loss'
-    Batch count should not return to zero when a new epoch begin.
-    :param log_file_path:
-    :param kind_of_y:
-    :return:
-    """
-
-    def illu_line(line, mode=1):
-        """
-        :param line:
-        :return:
-        """
-        try:
-            r = {}
-            if mode == 1:
-                date, time, epoch, _, batch, _, speed, _, train_rpnacc, rpnlogloss, rpnl1loss, rcnnacc, rcnnlogloss, rcnnl1loss = line.split()
-                r.update({'Train-RPNAcc': float(str.split(train_rpnacc, '=')[-1][:-1])})
-            else:
-                date, time, epoch, _, batch, _, speed, _, trainapenalty, bpenalty, cpenalty, rcnnacc, rpnacc, rpnlogloss, rpnl1loss, rcnnlogloss, rcnnl1loss = line.split()
-                r.update({
-                    'BPenalty'      : float(bpenalty[9:-1]),
-                    'CPenalty'      : float(cpenalty[9:-1]),
-                    'RPNAcc'        : float(rpnacc[7:-1]),
-                    'Train-APenalty': float(trainapenalty[15:-1])
-                })
-            r.update({
-                'Epoch'      : int(epoch[6:-1]),
-                'Batch'      : int(batch[1:-1]),
-                'Speed'      : float(speed),
-                'RPNLogLoss' : float(str.split(rpnlogloss, '=')[-1][:-1]),
-                'RPNL1Loss'  : float(str.split(rpnl1loss, '=')[-1][:-1]),
-                'RCNNAcc'    : float(str.split(rcnnacc, '=')[-1][:-1]),
-                'RCNNLogLoss': float(str.split(rcnnlogloss, '=')[-1][:-1]),
-                'RCNNL1Loss' : float(str.split(rcnnl1loss, '=')[-1][:-1])
-            })
-            return r
-        except:
-            return None
-
-    # 1. File1
-    # Data
-    data1 = []
-    # Read file
-    f = open(log_file_path1)
-    line = f.readline()
-    while line:
-        r = illu_line(line, mode=1)
-        if r is not None:
-            data1.append(r[kind_of_y])
-        line = f.readline()
-    f.close()
-    # 2. File2
-    if log_file_path2 is not None:
-        data2 = []
-        f = open(log_file_path2)
-        line = f.readline()
-        while line:
-            r = illu_line(line, mode=2)
-            if r is not None:
-                data2.append(r[kind_of_y])
-            line = f.readline()
-    f.close()
-    # Plot
-    plt.plot(data1, color='r')
-    if data2: plt.plot(data2, color='b')
-    plt.title(kind_of_y + ' red:1, blue:2.')
-    plt.xlabel('Batch')
-    plt.ylabel(kind_of_y)
-    plt.show()
-
-
 def conver2dict(items):
     d = {}
     for item in items:
@@ -144,6 +70,9 @@ def compare_logs(log_paths, kind_of_y='RCNNAcc', save_path=None, colors=None):
             y.append(float(items[kind_of_y]))
 
         f.close()
+        if log_path.startswith('1080/'):
+            # the batch num on 1080 is double of others, so halve the batch num
+            y = y[1::2]
         plt.plot(y, label=log_path, color=color, linewidth=6)
         plt.legend(loc='upper left', fontsize=fontsize)
         plt.xlabel('batch num in 7 epochs', fontsize=fontsize)
@@ -168,7 +97,8 @@ def compare_logs(log_paths, kind_of_y='RCNNAcc', save_path=None, colors=None):
         plt.savefig(save_path)
     return
 
+
 # compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='RCNNAcc', colors=['r', 'b'])
-# compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='Train-APenalty', colors=['r', 'b'])
-# compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='BPenalty', colors=['r', 'b'])
-# compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='CPenalty', colors=['r', 'b'])
+vis_offset(np.array([0.5, 1, 0.5, 1, 1, 0.5,
+                     1, 1, 1, 0.5, 1, 0.5,
+                     1, 1, 0.5, 1, 1, 1]))
