@@ -951,6 +951,7 @@ class resnet_v1_101_rfcn_dcn(Symbol):
             #  @MyCode
             smoothness_penalty_kernel = mx.sym.Variable(name='smoothness_penalty_kernel')
             smoothness_penalty_weight = mx.sym.Variable(name='smoothness_penalty_weight')
+            smoothness_penalty_bias = mx.sym.Variable(name='smoothness_penalty_bias')
             ABCVar_penalty_weight = mx.sym.Variable(name='ABCVar_penalty_weight')
 
             def get_smoothness_penalty(offset):
@@ -962,7 +963,8 @@ class resnet_v1_101_rfcn_dcn(Symbol):
             pa = get_smoothness_penalty(res5a_branch2b_offset)
             pb = get_smoothness_penalty(res5b_branch2b_offset)
             pc = get_smoothness_penalty(res5c_branch2b_offset)
-            smoothness_penalty = mean = (pa + pb + pc) / 3
+            mean = (pa + pb + pc) / 3
+            smoothness_penalty = mean + smoothness_penalty_bias
             ABCVar_penalty = ((pa - mean) ** 2 + (pa - mean) ** 2 + (pa - mean) ** 2) / 3
             penalty_loss = smoothness_penalty_weight * smoothness_penalty + ABCVar_penalty_weight * ABCVar_penalty
             penalty_loss = mx.sym.Reshape(penalty_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1))
