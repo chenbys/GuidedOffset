@@ -75,7 +75,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     roidbs = [load_gt_roidb(config.dataset.dataset, image_set, config.dataset.root_path, config.dataset.dataset_path,
                             flip=config.TRAIN.FLIP)
               for image_set in image_sets]
-    print "data loading:%.2fs" % (time.time() - t)
+    # print "data loading:%.2fs" % (time.time() - t)
     roidb = merge_roidb(roidbs)
     roidb = filter_roidb(roidb, config)
     # load training data
@@ -89,7 +89,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
         config.TRAIN.BATCH_IMAGES, 3, max([v[0] for v in config.SCALES]), max([v[1] for v in config.SCALES])))]
     max_data_shape, max_label_shape = train_data.infer_shape(max_data_shape)
     max_data_shape.append(('gt_boxes', (config.TRAIN.BATCH_IMAGES, 100, 5)))
-    print('providing maximum shape', max_data_shape, max_label_shape)
+    # print('providing maximum shape', max_data_shape, max_label_shape)
 
     data_shape_dict = dict(train_data.provide_data_single + train_data.provide_label_single)
     # pprint.pprint(data_shape_dict)
