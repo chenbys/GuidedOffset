@@ -1,7 +1,7 @@
 ---
 prefix: &prefix "first"
 smoothness_penalty_bias: 0
-smoothness_penalty_weight: 1e-4
+smoothness_penalty_weight: 100e-4
 ABCVar_penalty_weight: 0
 output_path: "output/"
 
