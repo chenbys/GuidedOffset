@@ -1,11 +1,11 @@
 ---
 prefix: &prefix "first"
 smoothness_penalty_bias: 0
-smoothness_penalty_weight: 100e-4
+smoothness_penalty_weight: 100000e-4
 ABCVar_penalty_weight: 0
 output_path: "output/"
 
-gpus: '0,1,2,3'
+gpus: '0,1'
 MXNET_VERSION: "mxnet"
 symbol: resnet_v1_101_rfcn_dcn
 CLASS_AGNOSTIC: true
