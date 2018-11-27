@@ -92,9 +92,9 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     print('providing maximum shape', max_data_shape, max_label_shape)
 
     data_shape_dict = dict(train_data.provide_data_single + train_data.provide_label_single)
-    pprint.pprint(data_shape_dict)
+    # pprint.pprint(data_shape_dict)
     sym_instance.infer_shape(data_shape_dict)
-    pprint.pprint(sym_instance.out_shape_dict)
+    # pprint.pprint(sym_instance.out_shape_dict)
     # load and initialize params
     if config.TRAIN.RESUME:
         print('continue training from ', begin_epoch)
@@ -152,6 +152,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     bbox_metric = metric.RCNNL1LossMetric(config)
     eval_metrics = mx.metric.CompositeEvalMetric()
     # @MyCode
+    eval_metrics.add(metric.SmoothnessPenalty())
     eval_metrics.add(metric.ABCVarPenalty())
     eval_metrics.add(metric.APenalty())
     eval_metrics.add(metric.BPenalty())
