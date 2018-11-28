@@ -785,7 +785,7 @@ class resnet_v1_101_rfcn_dcn(Symbol):
             data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=4 * num_anchors, name="rpn_bbox_pred")
         return rpn_cls_score, rpn_bbox_pred
 
-    def get_symbol(self, cfg, is_train=True):
+    def get_symbol(self, cfg, is_train=True, is_demo=False):
 
         # config alias for convenient
         num_classes = cfg.dataset.NUM_CLASSES
@@ -919,6 +919,39 @@ class resnet_v1_101_rfcn_dcn(Symbol):
         cls_score = mx.sym.Reshape(name='cls_score_reshape', data=cls_score, shape=(-1, num_classes))
         bbox_pred = mx.sym.Reshape(name='bbox_pred_reshape', data=bbox_pred, shape=(-1, 4 * num_reg_classes))
 
+        if is_demo:
+            cls_prob = mx.sym.SoftmaxActivation(name='cls_prob', data=cls_score)
+            cls_prob = mx.sym.Reshape(data=cls_prob, shape=(cfg.TEST.BATCH_IMAGES, -1, num_classes),
+                                      name='cls_prob_reshape')
+            bbox_pred = mx.sym.Reshape(data=bbox_pred, shape=(cfg.TEST.BATCH_IMAGES, -1, 4 * num_reg_classes),
+                                       name='bbox_pred_reshape')
+
+            smoothness_penalty_kernel = mx.sym.Variable(name='smoothness_penalty_kernel')
+            smoothness_penalty_weight = mx.sym.Variable(name='smoothness_penalty_weight')
+            smoothness_penalty_bias = mx.sym.Variable(name='smoothness_penalty_bias')
+            ABCVar_penalty_weight = mx.sym.Variable(name='ABCVar_penalty_weight')
+
+            def get_smoothness_penalty(offset):
+                delta = mx.sym.Convolution(offset, smoothness_penalty_kernel,
+                                           kernel=[1, 1], no_bias=True, num_filter=4, num_group=4)
+                return delta.square().mean()
+
+            pa = get_smoothness_penalty(res5a_branch2b_offset)
+            pb = get_smoothness_penalty(res5b_branch2b_offset)
+            pc = get_smoothness_penalty(res5c_branch2b_offset)
+            mean = (pa + pb + pc) / 3
+            smoothness_penalty = mean + smoothness_penalty_bias
+            # ABCVar_penalty = ((pa - mean) ** 2 + (pa - mean) ** 2 + (pa - mean) ** 2) / 3
+            # penalty_loss = smoothness_penalty_weight * smoothness_penalty + ABCVar_penalty_weight * ABCVar_penalty
+            # penalty_loss = mx.sym.Reshape(penalty_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1))
+
+            group = mx.sym.Group([rois, cls_prob, bbox_pred,
+                                  res5a_branch2b_offset, res5b_branch2b_offset, res5c_branch2b_offset,
+                                  rfcn_cls_offset,
+                                  pa, pb, pc])
+            self.sym = group
+            return group
+
         if is_train:
             if cfg.TRAIN.ENABLE_OHEM:
                 labels_ohem, bbox_weights_ohem = mx.sym.Custom(op_type='BoxAnnotatorOHEM', num_classes=num_classes,
@@ -958,13 +991,13 @@ class resnet_v1_101_rfcn_dcn(Symbol):
                 # [1,4*4,38,50]
                 delta = mx.sym.Convolution(offset, smoothness_penalty_kernel,
                                            kernel=[1, 1], no_bias=True, num_filter=4, num_group=4)
-                return delta.square().mean()
+                return delta.square().sqrt().mean()
 
             pa = get_smoothness_penalty(res5a_branch2b_offset)
             pb = get_smoothness_penalty(res5b_branch2b_offset)
             pc = get_smoothness_penalty(res5c_branch2b_offset)
             mean = (pa + pb + pc) / 3
-            smoothness_penalty = mean + smoothness_penalty_bias
+            smoothness_penalty = (mean + smoothness_penalty_bias).square().sqrt()
             ABCVar_penalty = ((pa - mean) ** 2 + (pa - mean) ** 2 + (pa - mean) ** 2) / 3
             penalty_loss = smoothness_penalty_weight * smoothness_penalty + ABCVar_penalty_weight * ABCVar_penalty
             penalty_loss = mx.sym.Reshape(penalty_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1))

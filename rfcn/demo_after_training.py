@@ -1,10 +1,3 @@
-# --------------------------------------------------------
-# Deformable Convolutional Networks
-# Copyright (c) 2017 Microsoft
-# Licensed under The MIT License [see LICENSE for details]
-# Written by Yi Li, Haochen Zhang
-# --------------------------------------------------------
-
 import _init_paths
 
 import argparse
@@ -23,6 +16,7 @@ os.environ['MXNET_CUDNN_AUTOTUNE_DEFAULT'] = '0'
 os.environ['MXNET_ENABLE_GPU_P2P'] = '0'
 cur_path = os.path.abspath(os.path.dirname(__file__))
 update_config(cur_path + '/../experiments/rfcn/cfgs/68/1-5.yaml')
+# model_path, model_epoch = cur_path + '/../output/1-5.yaml/2007_trainval_2012_trainval/first', 7
 
 sys.path.insert(0, os.path.join(cur_path, '../external/mxnet', config.MXNET_VERSION))
 import mxnet as mx
@@ -38,12 +32,29 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Show Deformable ConvNets demo')
     # general
     # parser.add_argument('--rfcn_only', help='whether use R-FCN only (w/o Deformable ConvNets)', default=False, action='store_true')
+    parser.add_argument('--model_prefix', default='output/1-5.yaml/2007_trainval_2012_trainval/first',
+                        action='store_true')
+    parser.add_argument('--model_epoch', default=7, action='store_true')
 
     args = parser.parse_args()
     return args
 
 
 args = parse_args()
+
+
+def show_roipool_offset(output_all, im, im_name):
+    pa = output_all['mean0_output'][0].asnumpy()
+    pb = output_all['mean1_output'][0].asnumpy()
+    pc = output_all['mean2_output'][0].asnumpy()
+    # [72=4*18,39,38]
+    conv_offset_a = output_all['res5a_branch2b_offset_output'][0].asnumpy()
+    conv_offset_b = output_all['res5b_branch2b_offset_output'][0].asnumpy()
+    conv_offset_c = output_all['res5c_branch2b_offset_output'][0].asnumpy()
+    # [42,7,7]
+    roipool_offset = output_all['rfcn_cls_offset_output'][0].asnumpy()
+
+    return
 
 
 def main():
@@ -53,18 +64,29 @@ def main():
     # sym_instance = eval(config.symbol + '.' + config.symbol)()
     # sym = sym_instance.get_symbol(config, is_train=False)
     sym_instance = resnet_v1_101_rfcn_dcn.resnet_v1_101_rfcn_dcn()
-    sym = sym_instance.get_symbol(config, is_train=False)
+    sym = sym_instance.get_symbol(config, is_train=False, is_demo=True)
     # set up class names
-    num_classes = 81
-    classes = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
-               'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',
-               'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag', 'tie',
-               'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat', 'baseball glove',
-               'skateboard', 'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup', 'fork', 'knife', 'spoon',
-               'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut',
-               'cake', 'chair', 'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse',
-               'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book',
-               'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush']
+    # num_classes = 21
+    classes = ['aeroplane',
+               'bicycle',
+               'bird',
+               'boat',
+               'bottle',
+               'bus',
+               'car',
+               'cat',
+               'chair',
+               'cow',
+               'diningtable',
+               'dog',
+               'horse',
+               'motorbike ',
+               'person',
+               'pottedplant',
+               'sheep',
+               'sofa',
+               'train',
+               'tvmonitor']
 
     # load demo data
     # image_names = ['COCO_test2015_000000000891.jpg', 'COCO_test2015_000000001669.jpg']
@@ -87,8 +109,7 @@ def main():
     provide_data = [[(k, v.shape) for k, v in zip(data_names, data[i])] for i in xrange(len(data))]
     provide_label = [None for i in xrange(len(data))]
 
-    arg_params, aux_params = load_param(
-        cur_path + '/../model/' + ('rfcn_dcn_coco' if not args.rfcn_only else 'rfcn_coco'), 0, process=True)
+    arg_params, aux_params = load_param(args.model_prefix, args.model_epoch, process=True)
 
     predictor = Predictor(sym, data_names, label_names,
                           context=[mx.gpu(0)], max_data_shapes=max_data_shape,
@@ -96,21 +117,21 @@ def main():
                           arg_params=arg_params, aux_params=aux_params)
     nms = gpu_nms_wrapper(config.TEST.NMS, 0)
 
-    # warm up
-    for j in xrange(2):
-        data_batch = mx.io.DataBatch(data=[data[0]], label=[], pad=0, index=0,
-                                     provide_data=[[(k, v.shape) for k, v in zip(data_names, data[0])]],
-                                     provide_label=[None])
-        scales = [data_batch.data[i][1].asnumpy()[0, 2] for i in xrange(len(data_batch.data))]
-        scores, boxes, data_dict = im_detect(predictor, data_batch, data_names, scales, config)
-
+    # warm up ???
+    # for j in xrange(2):
+    #     data_batch = mx.io.DataBatch(data=[data[0]], label=[], pad=0, index=0,
+    #                                  provide_data=[[(k, v.shape) for k, v in zip(data_names, data[0])]],
+    #                                  provide_label=[None])
+    #     scales = [data_batch.data[i][1].asnumpy()[0, 2] for i in xrange(len(data_batch.data))]
+    #     # just output roi from RPN
+    #     scores, boxes, data_dict = im_detect(predictor, data_batch, data_names, scales, config)
     # test
     for idx, im_name in enumerate(image_names):
         data_batch = mx.io.DataBatch(data=[data[idx]], label=[], pad=0, index=idx,
                                      provide_data=[[(k, v.shape) for k, v in zip(data_names, data[idx])]],
                                      provide_label=[None])
         scales = [data_batch.data[i][1].asnumpy()[0, 2] for i in xrange(len(data_batch.data))]
-
+        output_all = predictor.predict(data_batch)[0]
         tic()
         scores, boxes, data_dict = im_detect(predictor, data_batch, data_names, scales, config)
         boxes = boxes[0].astype('f')
@@ -126,10 +147,11 @@ def main():
             dets_nms.append(cls_dets)
         print 'testing {} {:.4f}s'.format(im_name, toc())
         # visualize
-        im = cv2.imread(cur_path + '/../demo/' + im_name)
+        im = cv2.imread(cur_path + '/../demo/mdemo/' + im_name)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-        show_boxes(im, dets_nms, classes, 1)
-
+        # show_boxes(im, dets_nms, classes, 1, im_name)
+        show_roipool_offset(output_all, im, im_name)
+        # show_conv_offset(output_all, im, im_name)
     print 'done'
 
 
