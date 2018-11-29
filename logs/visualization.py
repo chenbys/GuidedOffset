@@ -105,8 +105,9 @@ def vis_offset_from_model(model_path, epoch):
     pass
 
 
-vis_offset_from_model('params/68/0e-4', 7)
-# compare_logs(['1080/0.log', '1080/1.0.log'], kind_of_y='RCNNAcc', colors=['r', 'b'])
-vis_offset(np.array([0.5, 1, 0.5, 1, 1, 0.5,
-                     1, 1, 1, 0.5, 1, 0.5,
-                     1, 1, 0.5, 1, 1, 1]))
+# vis_offset_from_model('params/68/0e-4', 7)
+compare_logs(['1080ti/0-1-0.log', '68/-1-1-0.log'],
+             kind_of_y='RCNNAcc')
+# vis_offset(np.array([0.5, 1, 0.5, 1, 1, 0.5,
+#                      1, 1, 1, 0.5, 1, 0.5,
+#                      1, 1, 0.5, 1, 1, 1]))
