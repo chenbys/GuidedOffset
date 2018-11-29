@@ -991,13 +991,13 @@ class resnet_v1_101_rfcn_dcn(Symbol):
                 # [1,4*4,38,50]
                 delta = mx.sym.Convolution(offset, smoothness_penalty_kernel,
                                            kernel=[1, 1], no_bias=True, num_filter=4, num_group=4)
-                return delta.square().sqrt().mean()
+                return delta.square().mean()
 
             pa = get_smoothness_penalty(res5a_branch2b_offset)
             pb = get_smoothness_penalty(res5b_branch2b_offset)
             pc = get_smoothness_penalty(res5c_branch2b_offset)
             mean = (pa + pb + pc) / 3
-            smoothness_penalty = (mean + smoothness_penalty_bias).square().sqrt()
+            smoothness_penalty = (mean + smoothness_penalty_bias).square()
             ABCVar_penalty = ((pa - mean) ** 2 + (pa - mean) ** 2 + (pa - mean) ** 2) / 3
             penalty_loss = smoothness_penalty_weight * smoothness_penalty + ABCVar_penalty_weight * ABCVar_penalty
             penalty_loss = mx.sym.Reshape(penalty_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1))
