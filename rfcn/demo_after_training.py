@@ -32,8 +32,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Show Deformable ConvNets demo')
     # general
     # parser.add_argument('--rfcn_only', help='whether use R-FCN only (w/o Deformable ConvNets)', default=False, action='store_true')
-    parser.add_argument('--model_prefix', default='output/1-5.yaml/2007_trainval_2012_trainval/first',
+    # parser.add_argument('--model_prefix', default='output/1-5.yaml/2007_trainval_2012_trainval/first')
+    parser.add_argument('--model_prefix', default='output/-1-1-0.yaml/2007_trainval_2012_trainval/first',
                         action='store_true')
+
     parser.add_argument('--model_epoch', default=7, action='store_true')
 
     args = parser.parse_args()
@@ -41,6 +43,33 @@ def parse_args():
 
 
 args = parse_args()
+
+
+def show_conv_offset(output_all, im, im_name):
+    from utils.show_offset import mshow_dconv_offset
+    pa = output_all['mean0_output'].asnumpy()
+    pb = output_all['mean1_output'].asnumpy()
+    pc = output_all['mean2_output'].asnumpy()
+    # [72=4*18,39,38]
+    conv_offset_a = output_all['res5a_branch2b_offset_output'].asnumpy()
+    conv_offset_b = output_all['res5b_branch2b_offset_output'].asnumpy()
+    conv_offset_c = output_all['res5c_branch2b_offset_output'].asnumpy()
+    # [42,7,7]
+    roipool_offset = output_all['rfcn_cls_offset_output'].asnumpy()
+
+    # a,b,c three layers, 0,1,2,3 four groups
+    a0, a1, a2, a3 = conv_offset_a[:, 0:18, :], conv_offset_a[:, 18:36, :], \
+                     conv_offset_a[:, 36:54, :], conv_offset_a[:, 54:72, :]
+    b0, b1, b2, b3 = conv_offset_b[:, 0:18, :], conv_offset_b[:, 18:36, :], \
+                     conv_offset_b[:, 36:54, :], conv_offset_b[:, 54:72, :]
+    c0, c1, c2, c3 = conv_offset_c[:, 0:18, :], conv_offset_c[:, 18:36, :], \
+                     conv_offset_c[:, 36:54, :], conv_offset_c[:, 54:72, :]
+    mshow_dconv_offset(im, [a0, b0, c0], save_name=im_name + '@0')
+    mshow_dconv_offset(im, [a1, b1, c1], save_name=im_name + '@1')
+    mshow_dconv_offset(im, [a2, b2, c2], save_name=im_name + '@2')
+    mshow_dconv_offset(im, [a3, b3, c3], save_name=im_name + '@3')
+
+    return
 
 
 def show_roipool_offset(output_all, im, im_name):
@@ -90,7 +119,7 @@ def main():
 
     # load demo data
     # image_names = ['COCO_test2015_000000000891.jpg', 'COCO_test2015_000000001669.jpg']
-    image_names = ['000027.jpg', '000029.jpg']
+    image_names = ['000027.jpg']
     data = []
     for im_name in image_names:
         im = cv2.imread(cur_path + '/../demo/mdemo/' + im_name, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
@@ -112,11 +141,10 @@ def main():
     # data_shape_dict = dict(train_data.provide_data_single + train_data.provide_label_single)
     # sym_instance.infer_shape(data_shape_dict)
 
-
     arg_params, aux_params = load_param(args.model_prefix, args.model_epoch, process=True)
 
     predictor = Predictor(sym, data_names, label_names,
-                          context=[mx.gpu(0)], max_data_shapes=max_data_shape,
+                          context=[mx.gpu(3)], max_data_shapes=max_data_shape,
                           provide_data=provide_data, provide_label=provide_label,
                           arg_params=arg_params, aux_params=aux_params)
     nms = gpu_nms_wrapper(config.TEST.NMS, 0)
@@ -154,8 +182,8 @@ def main():
         im = cv2.imread(cur_path + '/../demo/mdemo/' + im_name)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         # show_boxes(im, dets_nms, classes, 1, im_name)
-        show_roipool_offset(output_all, im, im_name)
-        # show_conv_offset(output_all, im, im_name)
+        # show_roipool_offset(output_all, im, im_name)
+        show_conv_offset(output_all, im, im_name)
     print 'done'
 
 

@@ -699,11 +699,17 @@ class resnet_v1_101_rfcn_dcn(Symbol):
         scale5a_branch2a = bn5a_branch2a
         # [1,512,39,38]
         res5a_branch2a_relu = mx.symbol.Activation(name='res5a_branch2a_relu', data=scale5a_branch2a, act_type='relu')
-        # [1,72=18*4,39,38]
+        # [1,72=18+18+18+18,39,38]
         res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data=res5a_branch2a_relu,
                                                       num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1),
                                                       dilate=(2, 2), cudnn_off=True)
-        # [1,512,39,38],weight=[512,3,3]
+        # If num_deformable_group is larger than 1, denoted by dg,
+        # then split the input offset evenly into dg parts along the channel axis,
+        # and also evenly split out evenly into dg parts along the channel axis.
+        # Next compute the deformable convolution,
+        # apply the i-th part of the offset part on the i-th out.
+
+        # [1,512=128+128+128+128,39,38],weight=[512,3,3]
         res5a_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5a_branch2b', data=res5a_branch2a_relu,
                                                                  offset=res5a_branch2b_offset,
                                                                  num_filter=512, pad=(2, 2), kernel=(3, 3),
@@ -717,8 +723,7 @@ class resnet_v1_101_rfcn_dcn(Symbol):
         scale5a_branch2b = bn5a_branch2b
         res5a_branch2b_relu = mx.symbol.Activation(name='res5a_branch2b_relu', data=scale5a_branch2b, act_type='relu')
         res5a_branch2c = mx.symbol.Convolution(name='res5a_branch2c', data=res5a_branch2b_relu, num_filter=2048,
-                                               pad=(0, 0),
-                                               kernel=(1, 1), stride=(1, 1), no_bias=True)
+                                               pad=(0, 0), kernel=(1, 1), stride=(1, 1), no_bias=True)
         bn5a_branch2c = mx.symbol.BatchNorm(name='bn5a_branch2c', data=res5a_branch2c, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
         scale5a_branch2c = bn5a_branch2c
