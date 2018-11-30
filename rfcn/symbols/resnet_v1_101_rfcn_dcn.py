@@ -782,15 +782,15 @@ class resnet_v1_101_rfcn_dcn(Symbol):
         res5c_relu = mx.symbol.Activation(name='res5c_relu', data=res5c, act_type='relu')
         return res5c_relu, res5a_branch2b_offset, res5b_branch2b_offset, res5c_branch2b_offset
 
-    # def get_rpn(self, conv_feat, num_anchors):
-    #     rpn_conv = mx.sym.Convolution(
-    #         data=conv_feat, kernel=(3, 3), pad=(1, 1), num_filter=512, name="rpn_conv_3x3")
-    #     rpn_relu = mx.sym.Activation(data=rpn_conv, act_type="relu", name="rpn_relu")
-    #     rpn_cls_score = mx.sym.Convolution(
-    #         data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=2 * num_anchors, name="rpn_cls_score")
-    #     rpn_bbox_pred = mx.sym.Convolution(
-    #         data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=4 * num_anchors, name="rpn_bbox_pred")
-    #     return rpn_cls_score, rpn_bbox_pred
+    def get_rpn(self, conv_feat, num_anchors):
+        rpn_conv = mx.sym.Convolution(
+            data=conv_feat, kernel=(3, 3), pad=(1, 1), num_filter=512, name="rpn_conv_3x3")
+        rpn_relu = mx.sym.Activation(data=rpn_conv, act_type="relu", name="rpn_relu")
+        rpn_cls_score = mx.sym.Convolution(
+            data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=2 * num_anchors, name="rpn_cls_score")
+        rpn_bbox_pred = mx.sym.Convolution(
+            data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=4 * num_anchors, name="rpn_bbox_pred")
+        return rpn_cls_score, rpn_bbox_pred
 
     def get_symbol(self, cfg, is_train=True, is_demo=False):
 
