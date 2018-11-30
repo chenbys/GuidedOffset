@@ -109,6 +109,10 @@ def main():
     provide_data = [[(k, v.shape) for k, v in zip(data_names, data[i])] for i in xrange(len(data))]
     provide_label = [None for i in xrange(len(data))]
 
+    # data_shape_dict = dict(train_data.provide_data_single + train_data.provide_label_single)
+    # sym_instance.infer_shape(data_shape_dict)
+
+
     arg_params, aux_params = load_param(args.model_prefix, args.model_epoch, process=True)
 
     predictor = Predictor(sym, data_names, label_names,

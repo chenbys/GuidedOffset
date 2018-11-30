@@ -25,6 +25,7 @@ class resnet_v1_101_rfcn_dcn(Symbol):
         self.workspace = 512
         self.units = (3, 4, 23, 3)  # use for 101
         self.filter_list = [256, 512, 1024, 2048]
+        self.demo_kit = []
 
     def get_resnet_v1_conv4(self, data):
         conv1 = mx.symbol.Convolution(name='conv1', data=data, num_filter=64, pad=(3, 3), kernel=(7, 7), stride=(2, 2),
@@ -696,15 +697,21 @@ class resnet_v1_101_rfcn_dcn(Symbol):
         bn5a_branch2a = mx.symbol.BatchNorm(name='bn5a_branch2a', data=res5a_branch2a, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
         scale5a_branch2a = bn5a_branch2a
+        # [1,512,39,38]
         res5a_branch2a_relu = mx.symbol.Activation(name='res5a_branch2a_relu', data=scale5a_branch2a, act_type='relu')
+        # [1,72=18*4,39,38]
         res5a_branch2b_offset = mx.symbol.Convolution(name='res5a_branch2b_offset', data=res5a_branch2a_relu,
                                                       num_filter=72, pad=(2, 2), kernel=(3, 3), stride=(1, 1),
                                                       dilate=(2, 2), cudnn_off=True)
+        # [1,512,39,38],weight=[512,3,3]
         res5a_branch2b = mx.contrib.symbol.DeformableConvolution(name='res5a_branch2b', data=res5a_branch2a_relu,
                                                                  offset=res5a_branch2b_offset,
                                                                  num_filter=512, pad=(2, 2), kernel=(3, 3),
                                                                  num_deformable_group=4,
                                                                  stride=(1, 1), dilate=(2, 2), no_bias=True)
+        self.demo_kit.append(res5a_branch2a_relu)
+        self.demo_kit.append(res5a_branch2b)
+
         bn5a_branch2b = mx.symbol.BatchNorm(name='bn5a_branch2b', data=res5a_branch2b, use_global_stats=True,
                                             fix_gamma=False, eps=self.eps)
         scale5a_branch2b = bn5a_branch2b
@@ -775,15 +782,15 @@ class resnet_v1_101_rfcn_dcn(Symbol):
         res5c_relu = mx.symbol.Activation(name='res5c_relu', data=res5c, act_type='relu')
         return res5c_relu, res5a_branch2b_offset, res5b_branch2b_offset, res5c_branch2b_offset
 
-    def get_rpn(self, conv_feat, num_anchors):
-        rpn_conv = mx.sym.Convolution(
-            data=conv_feat, kernel=(3, 3), pad=(1, 1), num_filter=512, name="rpn_conv_3x3")
-        rpn_relu = mx.sym.Activation(data=rpn_conv, act_type="relu", name="rpn_relu")
-        rpn_cls_score = mx.sym.Convolution(
-            data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=2 * num_anchors, name="rpn_cls_score")
-        rpn_bbox_pred = mx.sym.Convolution(
-            data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=4 * num_anchors, name="rpn_bbox_pred")
-        return rpn_cls_score, rpn_bbox_pred
+    # def get_rpn(self, conv_feat, num_anchors):
+    #     rpn_conv = mx.sym.Convolution(
+    #         data=conv_feat, kernel=(3, 3), pad=(1, 1), num_filter=512, name="rpn_conv_3x3")
+    #     rpn_relu = mx.sym.Activation(data=rpn_conv, act_type="relu", name="rpn_relu")
+    #     rpn_cls_score = mx.sym.Convolution(
+    #         data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=2 * num_anchors, name="rpn_cls_score")
+    #     rpn_bbox_pred = mx.sym.Convolution(
+    #         data=rpn_relu, kernel=(1, 1), pad=(0, 0), num_filter=4 * num_anchors, name="rpn_bbox_pred")
+    #     return rpn_cls_score, rpn_bbox_pred
 
     def get_symbol(self, cfg, is_train=True, is_demo=False):
 
@@ -948,7 +955,7 @@ class resnet_v1_101_rfcn_dcn(Symbol):
             group = mx.sym.Group([rois, cls_prob, bbox_pred,
                                   res5a_branch2b_offset, res5b_branch2b_offset, res5c_branch2b_offset,
                                   rfcn_cls_offset,
-                                  pa, pb, pc])
+                                  pa, pb, pc] + self.demo_kit)
             self.sym = group
             return group
 
