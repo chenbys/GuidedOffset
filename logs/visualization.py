@@ -3,11 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_offset(offset):
+def plot_offset(offset, save_name=''):
     """
     :param offset: Numpy.array. (2*k^2, )
     :return:
     """
+    import matplotlib as mpl
+    mpl.use('Agg')
+    import matplotlib.pyplot as plt
+
     k = int(math.sqrt(offset.shape[0] / 2))
     # 1. Reshape offset
     offset = np.reshape(offset, newshape=(k, k, 2))
@@ -43,9 +47,9 @@ def plot_offset(offset):
     for orig, offset in zip(orig_points, offset_points):
         ax.arrow(orig[1], orig[0], offset[1] - orig[1], offset[0] - orig[0],
                  length_includes_head=True, head_width=0.25, head_length=0.5, fc='r', ec='b')
-    plt.show()
     plt.tight_layout()
-
+    plt.savefig(save_name)
+    # plt.show()
 
 def conver2dict(items):
     d = {}
@@ -106,8 +110,8 @@ def vis_offset_from_model(model_path, epoch):
 
 
 # vis_offset_from_model('params/68/0e-4', 7)
-compare_logs(['1080ti/0-1-0.log', '68/-1-1-0.log'],
-             kind_of_y='RCNNAcc')
-# vis_offset(np.array([0.5, 1, 0.5, 1, 1, 0.5,
-#                      1, 1, 1, 0.5, 1, 0.5,
-#                      1, 1, 0.5, 1, 1, 1]))
+# compare_logs(['1080ti/0-1-0.log', '68/-1-1-0.log'],
+#              kind_of_y='RCNNAcc')
+plot_offset(np.array([0.5, 1, 0.5, 1, 1, 0.5,
+                      1, 1, 1, 0.5, 1, 0.5,
+                      1, 1, 0.5, 1, 1, 1]))

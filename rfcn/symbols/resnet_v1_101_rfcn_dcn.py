@@ -1015,6 +1015,10 @@ class resnet_v1_101_rfcn_dcn(Symbol):
             penalty_loss = mx.sym.Reshape(penalty_loss, shape=(cfg.TRAIN.BATCH_IMAGES, -1))
             penalty_loss = mx.sym.MakeLoss(penalty_loss, name='penalty_loss')
 
+            # penalty on roipool
+            # [300, 42, 7, 7]
+            rfcn_cls_offset
+
             group = mx.sym.Group(
                 [rpn_cls_prob, rpn_bbox_loss, cls_prob, bbox_loss, mx.sym.BlockGrad(rcnn_label), penalty_loss,
                  mx.sym.BlockGrad(pa), mx.sym.BlockGrad(pb), mx.sym.BlockGrad(pc),

@@ -183,9 +183,10 @@ def mshow_dpsroi_offset(im, boxes, offset, classes, trans_std=0.1, save_name='')
         plt.figure(idx + 1)
         plt.axis("off")
         plt.imshow(im)
-
+        # offset: [300,41,7,7]
         offset_w = np.squeeze(offset[idx, classes[idx] * 2, :, :]) * trans_std
         offset_h = np.squeeze(offset[idx, classes[idx] * 2 + 1, :, :]) * trans_std
+
         x1 = int(bbox[0])
         y1 = int(bbox[1])
         x2 = int(bbox[2])
@@ -196,15 +197,33 @@ def mshow_dpsroi_offset(im, boxes, offset, classes, trans_std=0.1, save_name='')
         bin_size_w = roi_width / part_size
         bin_size_h = roi_height / part_size
         show_boxes_simple(bbox, color='b')
+        sub_offsets = []
         for ih in range(part_size):
             for iw in range(part_size):
                 sub_box = np.array([x1 + iw * bin_size_w, y1 + ih * bin_size_h,
                                     x1 + (iw + 1) * bin_size_w, y1 + (ih + 1) * bin_size_h])
                 sub_offset = offset_h[ih, iw] * np.array([0, 1, 0, 1]) * roi_height \
                              + offset_w[ih, iw] * np.array([1, 0, 1, 0]) * roi_width
+                sub_offsets.append(sub_offset)
                 sub_box = sub_box + sub_offset
                 show_boxes_simple(sub_box)
 
+        def show_offset():
+            soffset = []
+            for sub_offset in sub_offsets:
+                y, x = sub_offset[0:2]
+                soffset.append(y / roi_height)
+                soffset.append(x / roi_width)
+            soffset = np.array(soffset)
+
+            from logs.visualization import plot_offset
+            save_path = '/home/chenjunjie/workspace/GuidedOffset/logs/figures/offset@' + \
+                        save_name + '@' + str(bbox)
+            save_path = save_path.replace('.jpg', '')
+            print save_path
+            plot_offset(soffset, save_path + '.jpg')
+
+        show_offset()
         save_path = '/home/chenjunjie/workspace/GuidedOffset/logs/figures/' + \
                     save_name + '@' + str(bbox) + '.jpg'
         print save_path
