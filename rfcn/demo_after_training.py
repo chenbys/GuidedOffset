@@ -72,17 +72,25 @@ def show_conv_offset(output_all, im, im_name):
     return
 
 
-def show_roipool_offset(output_all, im, im_name):
-    pa = output_all['mean0_output'][0].asnumpy()
-    pb = output_all['mean1_output'][0].asnumpy()
-    pc = output_all['mean2_output'][0].asnumpy()
+def show_roipool_offset(im, all_boxes, class_names, output_all, im_name):
+    pa = output_all['mean0_output'].asnumpy()
+    pb = output_all['mean1_output'].asnumpy()
+    pc = output_all['mean2_output'].asnumpy()
     # [72=4*18,39,38]
-    conv_offset_a = output_all['res5a_branch2b_offset_output'][0].asnumpy()
-    conv_offset_b = output_all['res5b_branch2b_offset_output'][0].asnumpy()
-    conv_offset_c = output_all['res5c_branch2b_offset_output'][0].asnumpy()
-    # [42,7,7]
-    roipool_offset = output_all['rfcn_cls_offset_output'][0].asnumpy()
+    conv_offset_a = output_all['res5a_branch2b_offset_output'].asnumpy()
+    conv_offset_b = output_all['res5b_branch2b_offset_output'].asnumpy()
+    conv_offset_c = output_all['res5c_branch2b_offset_output'].asnumpy()
+    # [300,42,7,7]
+    roipool_offset = output_all['rfcn_cls_offset_output'].asnumpy()
 
+    boxes, classes = [], []
+    for i, class_name in enumerate(class_names):
+        iboxes = all_boxes[i]
+        for j in range(iboxes.shape[0]):
+            boxes.append(iboxes[j][:4])
+            classes.append(i)
+    from utils.show_offset import mshow_dpsroi_offset
+    mshow_dpsroi_offset(im, boxes, roipool_offset, classes, save_name=im_name)
     return
 
 
@@ -119,7 +127,7 @@ def main():
 
     # load demo data
     # image_names = ['COCO_test2015_000000000891.jpg', 'COCO_test2015_000000001669.jpg']
-    image_names = ['000027.jpg']
+    image_names = ['000030.jpg']
     data = []
     for im_name in image_names:
         im = cv2.imread(cur_path + '/../demo/mdemo/' + im_name, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
@@ -144,7 +152,7 @@ def main():
     arg_params, aux_params = load_param(args.model_prefix, args.model_epoch, process=True)
 
     predictor = Predictor(sym, data_names, label_names,
-                          context=[mx.gpu(3)], max_data_shapes=max_data_shape,
+                          context=[mx.gpu(0)], max_data_shapes=max_data_shape,
                           provide_data=provide_data, provide_label=provide_label,
                           arg_params=arg_params, aux_params=aux_params)
     nms = gpu_nms_wrapper(config.TEST.NMS, 0)
@@ -181,10 +189,12 @@ def main():
         # visualize
         im = cv2.imread(cur_path + '/../demo/mdemo/' + im_name)
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+
+        save_name = args.model_prefix.replace('output/', '').replace('.yaml/2007_trainval_2012_trainval/', '@')
         # show_boxes(im, dets_nms, classes, 1, im_name)
-        # show_roipool_offset(output_all, im, im_name)
-        show_conv_offset(output_all, im, im_name)
-    print 'done'
+        show_roipool_offset(im, dets_nms, classes, output_all, im_name + save_name)
+        # show_conv_offset(output_all, im, im_name)
+        print 'done'
 
 
 if __name__ == '__main__':
