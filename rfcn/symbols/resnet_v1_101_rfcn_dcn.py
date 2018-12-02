@@ -1002,7 +1002,7 @@ class resnet_v1_101_rfcn_dcn(Symbol):
             def get_smoothness_penalty(offset):
                 # [1,4*4,38,50]
                 delta = mx.sym.Convolution(offset, smoothness_penalty_kernel,
-                                           kernel=[1, 1], no_bias=True, num_filter=4, num_group=4)
+                                           kernel=[1, 1], no_bias=True, num_filter=8, num_group=4)
                 return delta.square().mean()
 
             pa = get_smoothness_penalty(res5a_branch2b_offset)
@@ -1017,7 +1017,7 @@ class resnet_v1_101_rfcn_dcn(Symbol):
 
             # penalty on roipool
             # [300, 42, 7, 7]
-            rfcn_cls_offset
+            # rfcn_cls_offset
 
             group = mx.sym.Group(
                 [rpn_cls_prob, rpn_bbox_loss, cls_prob, bbox_loss, mx.sym.BlockGrad(rcnn_label), penalty_loss,
