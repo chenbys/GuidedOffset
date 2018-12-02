@@ -123,7 +123,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
                                     [0, 0, 0, 0, 0, 0, 1, 0, -2, 0, 1, 0, 0, 0, 0, 0, 0, 0],
                                     [0, 1, 0, 0, 0, 0, 0, 0, 0, -2, 0, 0, 0, 0, 0, 0, 0, 1],
                                     [0, 0, 0, 1, 0, 0, 0, 0, 0, -2, 0, 0, 0, 0, 0, 1, 0, 0],
-                                    [0, 0, 0, 0, 0, 1, 0, 0, 0, -2, 0, 0, 0, 1, 0, 0, 0, 0]
+                                    [0, 0, 0, 0, 0, 1, 0, 0, 0, -2, 0, 0, 0, 1, 0, 0, 0, 0],
                                     [0, 0, 0, 0, 0, 0, 0, 1, 0, -2, 0, 1, 0, 0, 0, 0, 0, 0]])
     print conv_kernel
     arg_params['smoothness_penalty_kernel'] = conv_kernel.expand_dims(2).expand_dims(3)
