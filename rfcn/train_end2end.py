@@ -109,14 +109,27 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     fixed_param_prefix.append('smoothness_penalty_bias')
     fixed_param_prefix.append('smoothness_penalty_kernel')
     fixed_param_prefix.append('ABCVar_penalty_weight')
-    kernel = mx.ndarray.array([[1, 1, 0, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 1, 1],
-                               [0, 0, 1, 1, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 1, 1, 0, 0],
-                               [0, 0, 0, 0, 0, 0, 1, 1, -2, -2, 1, 1, 0, 0, 0, 0, 0, 0],
-                               [0, 0, 0, 0, 1, 1, 0, 0, -2, -2, 0, 0, 1, 1, 0, 0, 0, 0]])
-    arg_params['smoothness_penalty_kernel'] = kernel.expand_dims(2).expand_dims(3)
+    # offset: [1,18,39,59]
+    # kernel: [4,18,1,1]
+    # out: [1,4,39,59]
+    # err for (Px+Py)^2, it should be (Px^2+Py^2), but them may be same.
+    conv_kernel = mx.ndarray.array([[1, 1, 0, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 1, 1],
+                                    [0, 0, 1, 1, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 1, 1, 0, 0],
+                                    [0, 0, 0, 0, 0, 0, 1, 1, -2, -2, 1, 1, 0, 0, 0, 0, 0, 0],
+                                    [0, 0, 0, 0, 1, 1, 0, 0, -2, -2, 0, 0, 1, 1, 0, 0, 0, 0]])
+    arg_params['smoothness_penalty_kernel'] = conv_kernel.expand_dims(2).expand_dims(3)
     arg_params['smoothness_penalty_weight'] = mx.ndarray.array([smoothness_penalty_weight])
     arg_params['smoothness_penalty_bias'] = mx.ndarray.array([smoothness_penalty_bias])
     arg_params['ABCVar_penalty_weight'] = mx.ndarray.array([ABCVar_penalty_weight])
+
+    # offset: [300, 42, 7, 7] => [300*21,2,7,7]
+    # kernel:                 => [4,2,3,3]
+    # out: [300,42,1,1]
+    roipool_kernel = mx.ndarray.array([[1, 1, 0, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 1, 1],
+                                       [0, 0, 1, 1, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 1, 1, 0, 0],
+                                       [0, 0, 0, 0, 0, 0, 1, 1, -2, -2, 1, 1, 0, 0, 0, 0, 0, 0],
+                                       [0, 0, 0, 0, 1, 1, 0, 0, -2, -2, 0, 0, 1, 1, 0, 0, 0, 0]])
+    arg_params['roipool_penalty_kernel'] = roipool_kernel.expand_dims(2).expand_dims(3)
 
     logger.info('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
     pprint.pprint('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
