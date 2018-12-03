@@ -125,7 +125,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
 
     # offset: [300, 42, 7, 7] => [300*21,2,7,7]
     # kernel:                 => [8,2,3,3]
-    # out: [300*21,8,4,4]
+    # out: [300*21,8,5,5]
     roipool_kernel = mx.ndarray.array([
         [[[1, 0, 0],
           [0, -2, 0],

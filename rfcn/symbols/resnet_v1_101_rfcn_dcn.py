@@ -1020,6 +1020,7 @@ class resnet_v1_101_rfcn_dcn(Symbol):
             reshap = rfcn_cls_offset.reshape((-1, 2, 7, 7))
             smoothness_roipool_kernel = mx.sym.Variable(name='smoothness_roipool_kernel')
             smoothness_roipool_weight = mx.sym.Variable(name='smoothness_roipool_weight')
+            # [300*21,8,5,5]
             roipool_penalty = mx.sym.Convolution(reshap, smoothness_roipool_kernel,
                                                  kernel=[3, 3], no_bias=True, num_filter=8)
             roipool_penalty_m = roipool_penalty.square().mean()
@@ -1031,7 +1032,7 @@ class resnet_v1_101_rfcn_dcn(Symbol):
                 [rpn_cls_prob, rpn_bbox_loss, cls_prob, bbox_loss, mx.sym.BlockGrad(rcnn_label), penalty_loss,
                  mx.sym.BlockGrad(pa), mx.sym.BlockGrad(pb), mx.sym.BlockGrad(pc),
                  mx.sym.BlockGrad(smoothness_penalty), mx.sym.BlockGrad(ABCVar_penalty),
-                 roipool_loss, mx.sym.BlockGrad(roipool_penalty_m)])
+                 roipool_loss, mx.sym.BlockGrad(roipool_penalty_m), mx.sym.BlockGrad(roipool_penalty)])
         else:
             cls_prob = mx.sym.SoftmaxActivation(name='cls_prob', data=cls_score)
             cls_prob = mx.sym.Reshape(data=cls_prob, shape=(cfg.TEST.BATCH_IMAGES, -1, num_classes),

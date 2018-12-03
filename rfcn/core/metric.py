@@ -20,7 +20,7 @@ class ROIPoolPenalty(mx.metric.EvalMetric):
         super(ROIPoolPenalty, self).__init__('ROIPoolPenalty')
 
     def update(self, labels, preds):
-        ROIPoolPenalty = preds[12].asnumpy()[0]
+        ROIPoolPenalty = preds[12].asnumpy()[0] * 1000
         self.sum_metric += ROIPoolPenalty
         self.num_inst += 1
 
