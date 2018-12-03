@@ -82,7 +82,15 @@ def show_roipool_offset(im, all_boxes, class_names, output_all, im_name):
     conv_offset_c = output_all['res5c_branch2b_offset_output'].asnumpy()
     # [300,42,7,7]
     roipool_offset = output_all['rfcn_cls_offset_output'].asnumpy()
-
+    #   [300,42,7,7]=>[300*21,2,7,7]
+    # rp
+    # same :    roipool_offset[0, 2, :, :], rp[1, 0, :, :]
+    #           roipool_offset[0, 3, :, :], rp[1, 1, :, :]
+    #           roipool_offset[0, 4, :, :], rp[2, 0, :, :]
+    #           roipool_offset[1, 0, :, :], rp[21, 0, :, :]
+    #           roipool_offset[2, 0, :, :], rp[42, 0, :, :]
+    #           roipool_offset[2, 3, :, :], rp[43, 1, :, :]
+    rp = roipool_offset.reshape((-1, 2, 7, 7))
     boxes, classes = [], []
     for i, class_name in enumerate(class_names):
         iboxes = all_boxes[i]
@@ -191,7 +199,7 @@ def main():
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
 
         save_name = args.model_prefix.replace('output/', '').replace('.yaml/2007_trainval_2012_trainval/', '@')
-        # show_boxes(im, dets_nms, classes, 1, im_name)
+        show_boxes(im, dets_nms, classes, 1, im_name)
         show_roipool_offset(im, dets_nms, classes, output_all, im_name + save_name)
         # show_conv_offset(output_all, im, im_name)
         print 'done'

@@ -210,20 +210,23 @@ def mshow_dpsroi_offset(im, boxes, offset, classes, trans_std=0.1, save_name='')
 
         def show_offset():
             soffset = []
-            for sub_offset in sub_offsets:
-                y, x = sub_offset[0:2]
-                soffset.append(y / roi_height)
-                soffset.append(x / roi_width)
+            for y, x in zip(offset_h.flatten(), offset_w.flatten()):
+                soffset.append(y * 10)
+                soffset.append(x * 10)
+            # for sub_offset in sub_offsets:
+            #     y, x = sub_offset[0:2]
+            #     soffset.append(y / roi_height)
+            #     soffset.append(x / roi_width)
             soffset = np.array(soffset)
 
             from logs.visualization import plot_offset
-            save_path = '/home/chenjunjie/workspace/GuidedOffset/logs/figures/offset@' + \
-                        save_name + '@' + str(bbox)
+            save_path = '/home/chenjunjie/workspace/GuidedOffset/logs/figures/' + \
+                        save_name + 'offset@' + str(bbox)
             save_path = save_path.replace('.jpg', '')
             print save_path
             plot_offset(soffset, save_path + '.jpg')
 
-        show_offset()
+        # show_offset()
         save_path = '/home/chenjunjie/workspace/GuidedOffset/logs/figures/' + \
                     save_name + '@' + str(bbox) + '.jpg'
         print save_path

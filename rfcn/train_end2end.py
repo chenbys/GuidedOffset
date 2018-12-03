@@ -52,6 +52,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     smoothness_penalty_weight = float(config.mycfg.smoothness_penalty_weight)
     smoothness_penalty_bias = float(config.mycfg.smoothness_penalty_bias)
     ABCVar_penalty_weight = float(config.mycfg.ABCVar_penalty_weight)
+    smoothness_roipool_weight = float(config.mycfg.smoothness_roipool_weight)
 
     prefix = os.path.join(final_output_path, prefix)
 
@@ -110,8 +111,8 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     fixed_param_prefix.append('smoothness_penalty_kernel')
     fixed_param_prefix.append('ABCVar_penalty_weight')
     # offset: [1,18,39,59]
-    # kernel: [4,18,1,1]
-    # out: [1,4,39,59]
+    # kernel: should be [8,18,1,1]
+    # out: [1,8,39,59]
     # err for (Px+Py)^2, it should be (Px^2+Py^2), but them may be same.
     conv_kernel = mx.ndarray.array([[1, 1, 0, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 1, 1],
                                     [0, 0, 1, 1, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 1, 1, 0, 0],
@@ -123,14 +124,62 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     arg_params['ABCVar_penalty_weight'] = mx.ndarray.array([ABCVar_penalty_weight])
 
     # offset: [300, 42, 7, 7] => [300*21,2,7,7]
-    # kernel:                 => [4,2,3,3]
-    # out: [300,42,1,1]
-    roipool_kernel = mx.ndarray.array([[1, 1, 0, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 1, 1],
-                                       [0, 0, 1, 1, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 1, 1, 0, 0],
-                                       [0, 0, 0, 0, 0, 0, 1, 1, -2, -2, 1, 1, 0, 0, 0, 0, 0, 0],
-                                       [0, 0, 0, 0, 1, 1, 0, 0, -2, -2, 0, 0, 1, 1, 0, 0, 0, 0]])
-    arg_params['roipool_penalty_kernel'] = roipool_kernel.expand_dims(2).expand_dims(3)
-
+    # kernel:                 => [8,2,3,3]
+    # out: [300*21,8,4,4]
+    roipool_kernel = mx.ndarray.array([
+        [[[1, 0, 0],
+          [0, -2, 0],
+          [0, 0, 1]],
+         [[0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]]],
+        [[[0, 1, 0],
+          [0, -2, 0],
+          [0, 1, 0]],
+         [[0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]]],
+        [[[0, 0, 1],
+          [0, -2, 0],
+          [1, 0, 0]],
+         [[0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]]],
+        [[[0, 0, 0],
+          [1, -2, 1],
+          [0, 0, 0]],
+         [[0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]]],
+        [[[0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]],
+         [[1, 0, 0],
+          [0, -2, 0],
+          [0, 0, 1]]],
+        [[[0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]],
+         [[0, 1, 0],
+          [0, -2, 0],
+          [0, 1, 0]]],
+        [[[0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]],
+         [[0, 0, 1],
+          [0, -2, 0],
+          [1, 0, 0]]],
+        [[[0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]],
+         [[0, 0, 0],
+          [1, -2, 1],
+          [0, 0, 0]]],
+    ])
+    arg_params['smoothness_roipool_kernel'] = roipool_kernel
+    arg_params['smoothness_roipool_weight'] = mx.ndarray.array([smoothness_roipool_weight])
+    logger.info('@@@@smoothness_roipool_weight:' + str(smoothness_roipool_weight))
+    pprint.pprint('@@@@smoothness_roipool_weight:' + str(smoothness_roipool_weight))
     logger.info('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
     pprint.pprint('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
     logger.info('@@@@smoothness_penalty_bias:' + str(smoothness_penalty_bias))
@@ -165,11 +214,12 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     bbox_metric = metric.RCNNL1LossMetric(config)
     eval_metrics = mx.metric.CompositeEvalMetric()
     # @MyCode
+    eval_metrics.add(metric.ROIPoolPenalty())
     eval_metrics.add(metric.SmoothnessPenalty())
-    eval_metrics.add(metric.ABCVarPenalty())
     eval_metrics.add(metric.APenalty())
     eval_metrics.add(metric.BPenalty())
     eval_metrics.add(metric.CPenalty())
+    eval_metrics.add(metric.ABCVarPenalty())
 
     # rpn_eval_metric, rpn_cls_metric, rpn_bbox_metric, eval_metric, cls_metric, bbox_metric
     # for child_metric in [eval_metric, rpn_eval_metric, rpn_cls_metric, rpn_bbox_metric, cls_metric, bbox_metric]:
@@ -193,6 +243,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
                                               config.TRAIN.warmup_step)
     # optimizer
     optimizer_params = {'momentum'     : config.TRAIN.momentum,
+
                         'wd'           : config.TRAIN.wd,
                         'learning_rate': lr,
                         'lr_scheduler' : lr_scheduler,

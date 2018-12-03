@@ -15,6 +15,16 @@ import mxnet as mx
 import numpy as np
 
 
+class ROIPoolPenalty(mx.metric.EvalMetric):
+    def __init__(self):
+        super(ROIPoolPenalty, self).__init__('ROIPoolPenalty')
+
+    def update(self, labels, preds):
+        ROIPoolPenalty = preds[12].asnumpy()[0]
+        self.sum_metric += ROIPoolPenalty
+        self.num_inst += 1
+
+
 class SmoothnessPenalty(mx.metric.EvalMetric):
     def __init__(self):
         super(SmoothnessPenalty, self).__init__('SmoothnessLoss')

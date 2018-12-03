@@ -33,16 +33,17 @@ def plot_offset(offset, save_name=''):
     offset_loc[:, :, 0] = 2 * scale[0, 0, 0] - offset_loc[:, :, 0]
     # 4. Plot
     fig = plt.figure()
+    fig.set_dpi(300)
     ax = fig.add_subplot(111)
     ax.set_xlim(0, 2 * scale[0, 0, 1])
     ax.set_ylim(0, 2 * scale[0, 0, 0])
-    ax.grid()
+    # ax.grid()
     ax.set_aspect('equal')
     # (1) points
     orig_points = np.reshape(orig_loc, newshape=(orig_loc.shape[0] * orig_loc.shape[1], 2))
     offset_points = np.reshape(offset_loc, newshape=(offset_loc.shape[0] * offset_loc.shape[1], 2))
-    for y, x in orig_points: plt.scatter(x, y, s=100, c='b')
-    for y, x in offset_points: plt.scatter(x, y, s=100, c='r')
+    for y, x in orig_points: plt.scatter(x, y, s=10, c='b')
+    for y, x in offset_points: plt.scatter(x, y, s=20, c='r')
     # (2) Arrows
     for orig, offset in zip(orig_points, offset_points):
         ax.arrow(orig[1], orig[0], offset[1] - orig[1], offset[0] - orig[0],
@@ -50,6 +51,7 @@ def plot_offset(offset, save_name=''):
     plt.tight_layout()
     plt.savefig(save_name)
     # plt.show()
+
 
 def conver2dict(items):
     d = {}
