@@ -183,6 +183,8 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     fixed_param_prefix.append('smoothness_roipool_weight')
     logger.info('@@@@smoothness_roipool_weight:' + str(smoothness_roipool_weight))
     pprint.pprint('@@@@smoothness_roipool_weight:' + str(smoothness_roipool_weight))
+    logger.info('@@@@batch_size:' + str(batch_size))
+    pprint.pprint('@@@@batch_size:' + str(batch_size))
     # logger.info('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
     # pprint.pprint('@@@@smoothness_penalty_weight:' + str(smoothness_penalty_weight))
     # logger.info('@@@@smoothness_penalty_bias:' + str(smoothness_penalty_bias))
