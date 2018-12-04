@@ -226,8 +226,8 @@ def mshow_dpsroi_offset(im, boxes, offset, classes, trans_std=0.1, save_name='')
             print save_path
             plot_offset(soffset, save_path + '.jpg')
 
-        # show_offset()
+        show_offset()
         save_path = '/home/chenjunjie/workspace/GuidedOffset/logs/figures/' + \
                     save_name + '@' + str(bbox) + '.jpg'
-        print save_path
-        plt.savefig(save_path)
+        # print save_path
+        # plt.savefig(save_path)

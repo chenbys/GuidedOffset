@@ -63,7 +63,8 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch, lr, 
     feat_sym = sym.get_internals()['rpn_cls_score_output']
 
     # setup multi-gpu
-    batch_size = len(ctx)
+    # batch_size = len(ctx)
+    batch_size = 4
     input_batch_size = config.TRAIN.BATCH_IMAGES * batch_size
 
     # print config
