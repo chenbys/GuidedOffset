@@ -33,8 +33,8 @@ def test_rcnn(cfg, dataset, image_set, root_path, dataset_path,
         assert False, 'require a logger'
 
     # print cfg
-    pprint.pprint(cfg)
-    logger.info('testing cfg:{}\n'.format(pprint.pformat(cfg)))
+    # pprint.pprint(cfg)
+    # logger.info('testing cfg:{}\n'.format(pprint.pformat(cfg)))
 
     # load symbol and testing data
     if has_rpn:
